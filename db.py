@@ -92,8 +92,7 @@ def execute_read_query(connection, query):
 
 select_number = input("Enter the client's number who you wish to observe: ")
 # select_info will get the top 7 most recent entries (sorted in ascending order by date) for a specified phone number
-select_info = 
-"""
+select_info = """
 WITH (
     SELECT * FROM clients_info 
     WHERE phone_number = {} 
@@ -104,10 +103,10 @@ AS top7,
 SELECT * FROM
 top7
 ORDER BY entry_date
-.format(select_number)
-"""
+.format(select_number)"""
 
-select_info = "SELECT * FROM clients_info"
+#select_info = "SELECT * FROM clients_info"
+
 info = execute_read_query(connection, select_info)
 for client in info:
     print(client)
