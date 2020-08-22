@@ -90,17 +90,19 @@ def execute_read_query(connection, query):
     except Error as e:
         print(f"The error '{e}' occurred")
 
-""" ignore this for now
 select_number = input("Enter the client's number who you wish to observe: ")
 # select_info will get the top 7 most recent entries (sorted in ascending order by date) for a specified phone number
 select_info = 
-SELECT * FROM
-(
+"""
+WITH (
     SELECT * FROM clients_info 
     WHERE phone_number = {} 
     ORDER BY entry_date DESC
     LIMIT 7
-)
+    )
+AS top7,
+SELECT * FROM
+top7
 ORDER BY entry_date
 .format(select_number)
 """
