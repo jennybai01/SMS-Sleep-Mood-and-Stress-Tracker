@@ -65,7 +65,7 @@ while True:
 create_users = """
 INSERT INTO clients_info (phone_number, entry_date, mood, stress, sleep)
 VALUES
-    (4188214975, 2020-08-22, {}, {}, {});
+    (123456789, 2020-08-22, {}, {}, {});
 """.format(mood, stress, sleep)
 
 execute_query(connection, create_users_table)
