@@ -20,7 +20,7 @@ def create_connection(path):
         print(f"The error '{e}' occurred")
     return connection
 
-connection = create_connection(r"C:\Users\jenny\Desktop\clientdb.sqlite")
+connection = create_connection(r"C:\Users\Allen\Desktop\clientdb.sqlite")
 
 def execute_query(connection, query):
     cursor = connection.cursor()
