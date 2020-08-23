@@ -32,51 +32,52 @@ CREATE TABLE IF NOT EXISTS clients_info (
     sleep INTEGER
     );
 """
-while True: # get number
-    try:
-        number = input("Enter your phone number: ")
-        number = int(number)
-        break
-    except ValueError:
-        print("Please enter an integer.")
-
-
-while True: # get mood
-    try:
-        mood = input("Rate your mood today from 1 to 10 (inclusive): ")
-        mood = int(mood)
-        if (mood > 0 and mood < 11):
-            break
-    except ValueError:
-        print("Please enter an integer.")
-
-while True: # get stress
-    try:
-        stress = input("Rate your stress today from 1 to 10 (inclusive): ")
-        stress = int(stress)
-        if (stress > 0 and stress < 11):
-            break
-    except ValueError:
-        print("Please enter an integer.")
-
-while True: # get sleep
-    try:
-        sleep = input("How many hours of sleep did you get last night? ")
-        sleep = int(sleep)
-        if (sleep > -1 and sleep < 25):
-            break
-    except ValueError:
-        print("Please enter an integer.")
-
-# inserting records
-create_users = """
-INSERT INTO clients_info (phone_number, entry_date, mood, stress, sleep)
-VALUES
-    ({}, datetime('now'), {}, {}, {});
-""".format(number, mood, stress, sleep)
-
-execute_query(connection, create_users_table)
-execute_query(connection, create_users)
+# while True: # get number
+#     try:
+#         number = input("Enter your phone number: ")
+#         number = int(number)
+#         break
+#     except ValueError:
+#         print("Please enter an integer.")
+#
+#
+# while True: # get mood
+#     try:
+#         mood = input("Rate your mood today from 1 to 10 (inclusive): ")
+#         mood = int(mood)
+#         if (mood > 0 and mood < 11):
+#             break
+#     except ValueError:
+#         print("Please enter an integer.")
+#
+# while True: # get stress
+#     try:
+#         stress = input("Rate your stress today from 1 to 10 (inclusive): ")
+#         stress = int(stress)
+#         if (stress > 0 and stress < 11):
+#             break
+#     except ValueError:
+#         print("Please enter an integer.")
+#
+# while True: # get sleep
+#     try:
+#         sleep = input("How many hours of sleep did you get last night? ")
+#         sleep = int(sleep)
+#         if (sleep > -1 and sleep < 25):
+#             break
+#     except ValueError:
+#         print("Please enter an integer.")
+#
+# # inserting records
+# create_users = """ """
+# INSERT INTO clients_info (phone_number, entry_date, mood, stress, sleep)
+# VALUES
+#     ({}, datetime('now'), {}, {}, {});
+# """.format(number, mood, stress, sleep)
+#
+# """
+# execute_query(connection, create_users_table)
+# execute_query(connection, create_users)
 
 # selecting records
 def execute_read_query(connection, query):
@@ -100,16 +101,23 @@ WITH top7 AS (
 )
 SELECT * FROM
 top7
-ORDER BY entry_date""".format(select_number)
+ORDER BY entry_date ASC""".format(select_number)
 
 #select_info = "SELECT * FROM clients_info"
 
 info = execute_read_query(connection, select_info)
 
 mood_lst = []
+stress_lst = []
+sleep_lst = []
+date_lst = []
 for client_entry in info:
-    print(client_entry[]
-     #mood_lst.append(client_entry[]
+    date_lst.append(client_entry[2])
+    stress_lst.append(client_entry[4])
+    mood_lst.append(client_entry[3])
+    sleep_lst.append(client_entry[5])
+
+print(stress_lst)
 
 # deleting table records
 # delete_records = "DELETE FROM clients_info;"
