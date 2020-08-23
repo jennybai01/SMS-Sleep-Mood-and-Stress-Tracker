@@ -106,8 +106,10 @@ ORDER BY entry_date""".format(select_number)
 
 info = execute_read_query(connection, select_info)
 
-for client in info:
-     print(client)
+mood_lst = []
+for client_entry in info:
+    print(client_entry[]
+     #mood_lst.append(client_entry[]
 
 # deleting table records
 # delete_records = "DELETE FROM clients_info;"
