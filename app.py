@@ -43,6 +43,16 @@ CREATE TABLE IF NOT EXISTS clients_info (
     );
 """
 
+
+while True: # get number
+    try:
+        from_number = input("Enter your phone number: ")
+        print("Your number is: " + from_number)
+        from_number = int(from_number)
+        break
+    except ValueError:
+        print("Please enter an integer.")
+
 # Prompt user for input
 message = client.messages.create(body="Hey there! Checking in for today",
                 from_=twilio_num,
@@ -63,14 +73,6 @@ while True:
                 to=from_number)
 
 
-# while True: # get number
-#     try:
-#         number = input("Enter your phone number: ")
-#         number = int(number)
-#         print("Your number is: " + number)
-#         break
-#     except ValueError:
-#         print("Please enter an integer.")
 
 
 
