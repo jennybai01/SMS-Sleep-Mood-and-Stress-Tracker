@@ -187,26 +187,26 @@ def execute_read_query(connection, query):
     except Error as e:
         print(f"The error '{e}' occurred")
 
-select_number = input("Enter the client's number who you wish to observe: ")
+# select_number = input("Enter the client's number who you wish to observe: ")
 # select_info will get the top 7 most recent entries (sorted in ascending order by date) for a specified phone number
 select_info = """
-WITH top7 as (
-    SELECT * FROM clients_info 
-    WHERE phone_number = {} 
+WITH top7 AS (
+    SELECT * FROM clients_info
+    WHERE phone_number = 123
     ORDER BY entry_date DESC
     LIMIT 7
-    )
-AS top7
+)
 SELECT * FROM
 top7
-ORDER BY entry_date
-.format(select_number)"""
+ORDER BY entry_date"""
+    #.format(select_number)
 
 #select_info = "SELECT * FROM clients_info"
 
 info = execute_read_query(connection, select_info)
+
 for client in info:
-    print(client)
+     print(client)
 
 # deleting table records
 # delete_records = "DELETE FROM clients_info;"
