@@ -1,5 +1,8 @@
 import sqlite3
 from sqlite3 import Error
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 def create_connection(path):
     connection = None
@@ -107,17 +110,42 @@ ORDER BY entry_date ASC""".format(select_number)
 
 info = execute_read_query(connection, select_info)
 
+
+df = pd.read_sql_query(select_info, connection)
+df["entry_date"] = df["entry_date"].apply(lambda x: str(x).split()[1])
+sns.set_style("white")
+sns.set_palette(sns.color_palette("BuPu", 4))
+sns.lineplot(x = "entry_date", y = "mood", data = df, label = "mood")
+sns.lineplot(x = "entry_date", y = "stress", data = df, label = "stress")
+sns.lineplot(x = "entry_date", y = "sleep", data = df, label = "sleep")
+plt.ylabel("Your mood, stress, & sleep")
+plt.xlabel("Date")
+plt.show()
+
 mood_lst = []
 stress_lst = []
 sleep_lst = []
 date_lst = []
 for client_entry in info:
-    date_lst.append(client_entry[2])
+    date_lst.append(str(client_entry[2]).split()[1])
     stress_lst.append(client_entry[4])
     mood_lst.append(client_entry[3])
     sleep_lst.append(client_entry[5])
 
-print(stress_lst)
+# sns.set()
+# sns.lineplot(x = date_lst, y = stress_lst)
+# plt.show()
+
+# plt.plot(date_lst, mood_lst, label = "mood")
+# plt.plot(date_lst, stress_lst, label = "stress")
+# plt.plot(date_lst, sleep_lst, label = "sleep")
+# plt.xlabel("Date")
+# plt.ylabel("Mood, Sleep & Stress")
+# plt.title("This Week In Review")
+# plt.legend()
+# plt.show()
+
+
 
 # deleting table records
 # delete_records = "DELETE FROM clients_info;"
