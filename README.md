@@ -1,4 +1,4 @@
-# tracker
+# SMS Sleep, Mood, and Stress Tracker
 
 learned about:
 - how to use the datetime module and use datetime and date objects
