@@ -1,127 +1,142 @@
 import sqlite3
-from sqlite3 import Error
 import matplotlib.pyplot as plt
 import datetime
 import pandas as pd
 import seaborn as sns
+import os # for accessing email address and password (environment variables)
+import smtplib
+from email.message import EmailMessage
+import re #regexp for email validation
 
-def create_connection(path):
-    connection = None
-    try:
-        connection = sqlite3.connect(path)
-    except Error as e:
-        print(f"The error '{e}' occurred")
-    return connection
+def tracker_entry(number, mood, stress, sleep, email = "optional"):
+    connection = sqlite3.connect(r"C:\Users\jenny\Desktop\clientdb.sqlite") # creates connection to db
+    c = connection.cursor()
 
-connection = create_connection(r"C:\Users\jenny\Desktop\clientdb.sqlite")
+    # creating table
+    create_db = """
+    CREATE TABLE IF NOT EXISTS clients_info (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        phone_number INTEGER,
+        email TEXT,
+        entry_date DATE,
+        mood INTEGER,
+        stress INTEGER,
+        sleep INTEGER,
+        send_email INTEGER
+        );
+    """
 
-def execute_query(connection, query):
-    cursor = connection.cursor()
-    try:
-        cursor.execute(query)
-        connection.commit()
-    except Error as e:
-        print(f"The error '{e}' occurred")
+    c.execute(create_db)
+    connection.commit()
 
-# creating table
-create_db = """
-CREATE TABLE IF NOT EXISTS clients_info (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    phone_number INTEGER,
-    entry_date DATE,
-    mood INTEGER,
-    stress INTEGER,
-    sleep INTEGER
-    );
-"""
-execute_query(connection, create_db)
+    # get entry data
+    # while True: # get number
+    #     try:
+    #         number = input("Enter your phone number: ")
+    #         number = int(number)
+    #         break
+    #     except ValueError:
+    #         print("Please enter an integer.")
 
-# get entry data
-while True: # get number
-    try:
-        number = input("Enter your phone number: ")
-        number = int(number)
-        break
-    except ValueError:
-        print("Please enter an integer.")
+    existing_numbers_df = pd.read_sql_query("SELECT DISTINCT phone_number FROM clients_info", connection)
+    if number in existing_numbers_df["phone_number"].values: # this should be the case if an email parameter is not passed
+        select_existing_email = "SELECT DISTINCT email FROM clients_info WHERE phone_number = {}".format(number)
+        existing_email_df = pd.read_sql_query(select_existing_email, connection)
+        email = existing_email_df.email.values[0]
+    # else:
+    #     while True:
+    #         email = input("Enter your email: ")
+    #         regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+    #         if (re.search(regex, email)): # email validation with regexp
+    #             break
+    #         else:
+    #             print("Invalid email.")
+
+    # while True: # get mood
+    #     try:
+    #         mood = input("Rate your mood today from 1 to 10 (inclusive): ")
+    #         mood = int(mood)
+    #         if (mood > 0 and mood < 11):
+    #             break
+    #     except ValueError:
+    #         print("Please enter an integer.")
+
+    # while True: # get stress
+    #     try:
+    #         stress = input("Rate your stress today from 1 to 10 (inclusive): ")
+    #         stress = int(stress)
+    #         if (stress > 0 and stress < 11):
+    #             break
+    #     except ValueError:
+    #         print("Please enter an integer.")
+
+    # while True: # get sleep
+    #     try:
+    #         sleep = input("How many hours of sleep did you get last night? ")
+    #         sleep = int(sleep)
+    #         if (sleep > -1 and sleep < 25):
+    #             break
+    #     except ValueError:
+    #         print("Please enter an integer.")
 
 
-while True: # get mood
-    try:
-        mood = input("Rate your mood today from 1 to 10 (inclusive): ")
-        mood = int(mood)
-        if (mood > 0 and mood < 11):
-            break
-    except ValueError:
-        print("Please enter an integer.")
+    check_df = pd.read_sql_query(f"SELECT COUNT(*) as count FROM clients_info WHERE phone_number = {number}", connection)
+    if int(check_df["count"].values[0]) % 7 == 6:
+        send_email = 1
+    else:
+        send_email = 0
 
-while True: # get stress
-    try:
-        stress = input("Rate your stress today from 1 to 10 (inclusive): ")
-        stress = int(stress)
-        if (stress > 0 and stress < 11):
-            break
-    except ValueError:
-        print("Please enter an integer.")
+    # inserting records
+    entry = (number, email, datetime.datetime.now(),  mood, stress, sleep, send_email)
+    c.execute("INSERT INTO clients_info(phone_number, email, entry_date, mood, stress, sleep, send_email) VALUES (?, ?, ?, ?, ?, ?, ?)", entry)
+    connection.commit()
 
-while True: # get sleep
-    try:
-        sleep = input("How many hours of sleep did you get last night? ")
-        sleep = int(sleep)
-        if (sleep > -1 and sleep < 25):
-            break
-    except ValueError:
-        print("Please enter an integer.")
+    # figuring out how to use the datetime module
+    # print_this_df = pd.read_sql_query("SELECT entry_date FROM clients_info", connection)
+    # datetime_str = print_this_df["entry_date"].values[0] # 2020-09-06 22:42:57.879723 (str)
+    # datetime_obj = datetime.datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S.%f").date() # 2020-09-06 (datetime.date)
 
-# inserting records
-entry = (number, datetime.datetime.now(), mood, stress, sleep)
-c = connection.cursor()
-c.execute("INSERT INTO clients_info(phone_number, entry_date, mood, stress, sleep) VALUES (?, ?, ?, ?, ?)", entry)
-connection.commit()
+    if (send_email == 1):
+        # select_info will get the top 7 most recent entries (sorted in ascending order by date) for a specified phone number
+        select_info = f"""
+        WITH top7 AS (
+            SELECT * FROM clients_info
+            WHERE phone_number = {number}
+            ORDER BY entry_date DESC
+            LIMIT 7
+        )
+        SELECT * FROM
+        top7
+        ORDER BY entry_date ASC"""
 
-#execute_query(connection, add_entry)
+        df = pd.read_sql_query(select_info, connection)
+        plot_email = df.email.values[0]
+        df["entry_date"] = df["entry_date"].apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f").date()) # fix this to represent dates, not times
+        sns.set_style("white")
+        sns.lineplot(x = "entry_date", y = "mood", data = df, label = "mood", color="cornflowerblue")
+        sns.lineplot(x = "entry_date", y = "stress", data = df, label = "stress", color="mediumpurple")
+        sns.barplot(x = "entry_date", y = "sleep", data = df, label = "sleep", color="lavender")
+        font = {"fontname": "DejaVu Sans"}
+        plt.title("Your Mood, Stress and Sleep This Week", fontsize = 18, fontweight = "bold")
+        plt.ylabel("Mood, stress & sleep", **font)
+        plt.xlabel("Date", **font)
+        plt.savefig(r"C:\Users\jenny\Desktop\{}_sms_plot.png".format(number))
 
-# selecting records
-def execute_read_query(connection, query):
-    cursor = connection.cursor()
-    result = None
-    try:
-        cursor.execute(query)
-        result = cursor.fetchall()
-        return result
-    except Error as e:
-        print(f"The error '{e}' occurred")
 
-select_number = input("Enter the client's number who you wish to observe: ")
-# select_info will get the top 7 most recent entries (sorted in ascending order by date) for a specified phone number
-select_info = """
-WITH top7 AS (
-    SELECT * FROM clients_info
-    WHERE phone_number = {}
-    ORDER BY entry_date DESC
-    LIMIT 7
-)
-SELECT * FROM
-top7
-ORDER BY entry_date ASC""".format(select_number)
+        email_address = os.getenv("EMAIL_USER")
+        email_pw= os.getenv("EMAIL_PASS")
 
-#select_info = "SELECT * FROM clients_info"
+        msg = EmailMessage()
+        msg["Subject"] = "Your Mood, Stress & Sleep Data For the Week!"
+        msg["From"] = email_address
+        msg["To"] = plot_email
+        #msg.set_content("content")
 
-info = execute_read_query(connection, select_info)
+        with open(r"C:\Users\jenny\Desktop\{}_sms_plot.png".format(number), "rb") as f:
+            file_data = f.read()
 
-df = pd.read_sql_query(select_info, connection)
-# print(df)
-df["entry_date"] = df["entry_date"].apply(lambda x: str(x).split()[1][:8]) # fix this to represent dates, not times
-sns.set_style("white")
-sns.set_palette(sns.color_palette("BuPu", 2))
-sns.lineplot(x = "entry_date", y = "mood", data = df, label = "mood")
-sns.lineplot(x = "entry_date", y = "stress", data = df, label = "stress")
-sns.barplot(x = "entry_date", y = "sleep", data = df, label = "sleep", color="lavender").set_title("This Week's Mood, Stress & Sleep")
-plt.ylabel("Your mood, stress, & sleep")
-plt.xlabel("Date")
-plt.show()
+        msg.add_attachment(file_data, maintype="image", subtype="png", filename = "This week's data!")
 
-# deleting table records
-# delete_records = "DELETE FROM clients_info;"
-# execute_query(connection, delete_records)
-# print(execute_read_query(connection, select_info))
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(email_address, email_pw)
+            smtp.send_message(msg)
