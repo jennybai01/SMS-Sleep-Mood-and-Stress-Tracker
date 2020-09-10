@@ -8,10 +8,19 @@ import smtplib
 from email.message import EmailMessage
 import re #regexp for email validation
 
+
+def unique_numbers(): # this returns a numpy.ndarray of the unique numbers in the db
+    connection = sqlite3.connect("./sqlite/clientdb.sqlite")
+    emails = pd.read_sql_query("SELECT DISTINCT phone_number FROM clients_info", connection)
+    return emails.phone_number.values
+
+# for number in unique_numbers():
+#     print(number)
+
+
+
 def tracker_entry(number, mood, stress, sleep, email = "optional"):
     connection = sqlite3.connect("./sqlite/clientdb.sqlite") # creates connection to db
-    print(pd.read_sql_query("SELECT * FROM clients_info", connection))
-    exit(0)
     c = connection.cursor()
 
     # creating table
@@ -143,4 +152,5 @@ def tracker_entry(number, mood, stress, sleep, email = "optional"):
             smtp.login(email_address, email_pw)
             smtp.send_message(msg)
 
-# tracker_entry(123, 4, 7, 3) # number, mood, stress, sleep
+# tracker_entry(123, 7, 4, 10) # number, mood, stress, sleep
+# tracker_entry(321, 8, 4, 6)
