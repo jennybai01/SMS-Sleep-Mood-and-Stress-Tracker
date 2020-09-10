@@ -9,7 +9,9 @@ from email.message import EmailMessage
 import re #regexp for email validation
 
 def tracker_entry(number, mood, stress, sleep, email = "optional"):
-    connection = sqlite3.connect(r"C:\Users\jenny\Desktop\clientdb.sqlite") # creates connection to db
+    connection = sqlite3.connect("./sqlite/clientdb.sqlite") # creates connection to db
+    print(pd.read_sql_query("SELECT * FROM clients_info", connection))
+    exit(0)
     c = connection.cursor()
 
     # creating table
@@ -120,7 +122,7 @@ def tracker_entry(number, mood, stress, sleep, email = "optional"):
         plt.title("Your Mood, Stress and Sleep This Week", fontsize = 18, fontweight = "bold")
         plt.ylabel("Mood, stress & sleep", **font)
         plt.xlabel("Date", **font)
-        plt.savefig(r"C:\Users\jenny\Desktop\{}_sms_plot.png".format(number))
+        plt.savefig(r"./client_analysis/{}_sms_plot.png".format(number))
 
 
         email_address = os.getenv("EMAIL_USER")
@@ -132,7 +134,7 @@ def tracker_entry(number, mood, stress, sleep, email = "optional"):
         msg["To"] = plot_email
         #msg.set_content("content")
 
-        with open(r"C:\Users\jenny\Desktop\{}_sms_plot.png".format(number), "rb") as f:
+        with open(r"./client_analysis/{}_sms_plot.png".format(number), "rb") as f:
             file_data = f.read()
 
         msg.add_attachment(file_data, maintype="image", subtype="png", filename = "This week's data!")
@@ -140,3 +142,5 @@ def tracker_entry(number, mood, stress, sleep, email = "optional"):
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
             smtp.login(email_address, email_pw)
             smtp.send_message(msg)
+
+# tracker_entry(123, 4, 7, 3) # number, mood, stress, sleep
