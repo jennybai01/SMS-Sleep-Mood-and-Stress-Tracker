@@ -18,8 +18,9 @@ def unique_numbers(): # this returns a numpy.ndarray of the unique numbers in th
 #     print(number)
 
 
-
 def tracker_entry(number, mood, stress, sleep, email = "optional"):
+    print('RECEIVED.')
+
     connection = sqlite3.connect("./sqlite/clientdb.sqlite") # creates connection to db
     c = connection.cursor()
 
